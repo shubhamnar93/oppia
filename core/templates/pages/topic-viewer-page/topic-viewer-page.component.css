@@ -187,9 +187,12 @@ topic-viewer-page-root .topic-viewer-page-content .coming-soon-text {
 
   topic-viewer-page-root .topic-viewer-page-content .oppia-page-card {
     margin-top: 7em;
-    padding: 70px 24px 64px 24px;
     width: 100%;
   }
+
+  topic-viewer-page-root .topic-viewer-page-content stories-list .oppia-stories-list-container .oppia-page-card {
+    padding: 70px 24px 64px 24px;
+  } 
 
   topic-viewer-page-root .oppia-topic-viewer-tabs-container .topic-viewer-tabs .tab-icon {
     display: none;
