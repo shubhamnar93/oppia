@@ -4686,31 +4686,33 @@ export class LoggedInUser extends BaseUser {
    */
   async comingSoonLessonListHasChapters(chapterNames: string[]): Promise<void> {
     await this.page.waitForSelector(comingSoonChaptersListSelector);
-    const containers = await this.page.$$(comingSoonChaptersListSelector);
 
     for (const chapterName of chapterNames) {
-      let chapterFound = false;
-
-      for (const container of containers) {
-        const chapterEls = await container.$$(chapterSelector);
-
-        for (const el of chapterEls) {
-          const text = await el.evaluate(node => node.textContent?.trim());
-          if (text && text.includes(chapterName)) {
-            chapterFound = true;
-            showMessage(
-              `Chapter "${chapterName}" found in coming soon chapters list`
-            );
-            break;
-          }
-        }
-
-        if (chapterFound) {
-          break;
-        }
-      }
-
-      if (!chapterFound) {
+      try {
+        // The coming soon list is populated asynchronously, so wait for the
+        // chapter to appear instead of checking the current DOM only once.
+        await this.page.waitForFunction(
+          (comingSoonSel: string, chapterSel: string, name: string) => {
+            const containers = document.querySelectorAll(comingSoonSel);
+            for (const container of containers) {
+              const elements = container.querySelectorAll(chapterSel);
+              for (const el of elements) {
+                if (el.textContent?.trim().includes(name)) {
+                  return true;
+                }
+              }
+            }
+            return false;
+          },
+          {timeout: 15000},
+          comingSoonChaptersListSelector,
+          chapterSelector,
+          chapterName
+        );
+        showMessage(
+          `Chapter "${chapterName}" found in coming soon chapters list`
+        );
+      } catch (error) {
         throw new Error(
           `Chapter "${chapterName}" not found in coming soon chapters list`
         );
