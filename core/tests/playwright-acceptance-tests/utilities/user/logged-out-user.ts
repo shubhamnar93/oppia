@@ -321,6 +321,31 @@ const mobileSidebarExpandGetInvolvedMenuButton =
 const mobileSidebarGetInvolvedMenuDonateButton =
   'a.e2e-mobile-test-sidebar-get-involved-menu-donate-button';
 
+// Navbar and sidebar selectors for Volunteer.
+const navbarGetInvolvedTabVolunteerButton =
+  'a.e2e-test-navbar-get-involved-menu-volunteer-button';
+const mobileSidebarGetInvolvedMenuVolunteerButton =
+  'a.e2e-mobile-test-sidebar-get-involved-menu-volunteer-button';
+
+// Volunteer page selectors and URL.
+const volunteerUrl = testConstants.URLs.Volunteer;
+const volunteerIdealistPageUrl = testConstants.URLs.VolunteerIdealistPage;
+const volunteerPageHeadingSelector = '.e2e-test-volunteer-page-headings';
+const exploreVolunteerOpeningsButtonAtTheTopOfVolunteerPage =
+  '.e2e-test-volunteer-page-explore-volunteer-openings-button-at-the-top';
+const exploreVolunteerOpeningsButtonAtTheBottomOfVolunteerPage =
+  '.e2e-test-volunteer-page-explore-volunteer-openings-button-at-the-bottom';
+const tabsSectionInVolunteerPage = '.e2e-test-volunteer-page-tabs-section';
+const tabsPreviousButtonInVolunteerPage =
+  '.e2e-test-volunteer-page-tabs-prev-btn';
+const tabsNextButtonInVolunteerPage = '.e2e-test-volunteer-page-tabs-next-btn';
+const tabsFirstVolunteerExpectationsInVolunteerPage =
+  '.e2e-test-volunteer-page-first-expectations';
+const tabsSecondVolunteerExpectationsInVolunteerPage =
+  '.e2e-test-volunteer-page-second-expectations';
+// This is a Material tab label, so it is not prefixed with "e2e-test".
+const tabsLabelsInVolunteerPage = '.mat-tab-label';
+
 // Footer and Teach page navigation selectors.
 
 const footerVersionInfoSelector = '.e2e-test-footer-version-info';
@@ -4170,6 +4195,150 @@ export class LoggedOutUser extends BaseUser {
     ) {
       await this.expectElementToBeVisible(blogSuggestedForYouHeadingSelector);
     }
+  }
+
+  /**
+   * Navigates to the Volunteer page.
+   */
+  async navigateToVolunteerPage(): Promise<void> {
+    await this.goto(volunteerUrl);
+  }
+
+  /**
+   * Clicks the Volunteer button in the Get Involved menu on the navbar (or the
+   * mobile sidebar) and checks that it opens the Volunteer page.
+   */
+  async clickVolunteerButtonInGetInvolvedMenuOnNavbar(): Promise<void> {
+    if (this.isViewportAtMobileWidth()) {
+      await this.expectElementToBeVisible(mobileNavbarButtonSelector);
+      await this.openMobileSidebar();
+      await this.clickOnElementWithSelector(
+        mobileSidebarExpandGetInvolvedMenuButton
+      );
+      await this.clickButtonToNavigateToNewPage(
+        mobileSidebarGetInvolvedMenuVolunteerButton,
+        volunteerUrl
+      );
+    } else {
+      await this.expectElementToBeVisible(navbarGetInvolvedTab);
+      await this.clickOnElementWithSelector(navbarGetInvolvedTab);
+      await this.clickButtonToNavigateToNewPage(
+        navbarGetInvolvedTabVolunteerButton,
+        volunteerUrl
+      );
+    }
+  }
+
+  /**
+   * Checks that one of the headings on the Volunteer page contains the given
+   * text.
+   * @param {string} heading - The expected heading text.
+   */
+  async expectVolunteerPageHeadingToContain(heading: string): Promise<void> {
+    await this.expectAnyElementWithSelectorToHaveTextContent(
+      volunteerPageHeadingSelector,
+      heading
+    );
+  }
+
+  /**
+   * Checks that the volunteer expectations tabs can be toggled through the tab
+   * labels in desktop and through the arrow buttons in mobile.
+   */
+  async expectVolunteerExpectationsTabsToBeFunctionalInVolunteerPage(): Promise<void> {
+    await this.expectElementToBeVisible(tabsSectionInVolunteerPage);
+
+    const tabLabels = this.page.locator(tabsLabelsInVolunteerPage);
+    const expectedFirstTabHeading = 'Outreach volunteer expectations';
+    const expectedSecondTabHeading = 'Software volunteer expectations';
+
+    await this.expectElementContentToContain(
+      tabsFirstVolunteerExpectationsInVolunteerPage,
+      expectedFirstTabHeading
+    );
+
+    // Toggle to the next tab.
+    if (!this.isViewportAtMobileWidth()) {
+      await tabLabels.nth(1).click();
+    } else {
+      await this.clickOnElementWithSelector(tabsNextButtonInVolunteerPage);
+    }
+
+    await this.expectElementContentToContain(
+      tabsSecondVolunteerExpectationsInVolunteerPage,
+      expectedSecondTabHeading
+    );
+
+    // Toggle to the previous tab.
+    if (!this.isViewportAtMobileWidth()) {
+      await tabLabels.nth(0).click();
+    } else {
+      await this.clickOnElementWithSelector(tabsPreviousButtonInVolunteerPage);
+    }
+
+    await this.expectElementContentToContain(
+      tabsFirstVolunteerExpectationsInVolunteerPage,
+      expectedFirstTabHeading
+    );
+  }
+
+  /**
+   * Clicks the Explore Volunteer Openings button at the top of the Volunteer
+   * page and checks that it opens the Oppia Idealist page.
+   */
+  async clickExploreVolunteerOpeningsButtonAtTheTopOfVolunteerPage(): Promise<void> {
+    await this.clickLinkButtonToNewTab(
+      exploreVolunteerOpeningsButtonAtTheTopOfVolunteerPage,
+      'Explore Volunteer Openings at the top of the Volunteer page',
+      volunteerIdealistPageUrl,
+      'Oppia Idealist page'
+    );
+  }
+
+  /**
+   * Clicks the Explore Volunteer Openings button at the bottom of the Volunteer
+   * page and checks that it opens the Oppia Idealist page.
+   */
+  async clickExploreVolunteerOpeningsButtonAtTheBottomOfVolunteerPage(): Promise<void> {
+    await this.clickLinkButtonToNewTab(
+      exploreVolunteerOpeningsButtonAtTheBottomOfVolunteerPage,
+      'Explore Volunteer Openings at the bottom of the Volunteer page',
+      volunteerIdealistPageUrl,
+      'Oppia Idealist page'
+    );
+  }
+
+  /**
+   * Clicks a link that opens in a new tab and checks that the new tab opens the
+   * expected URL.
+   * @param {string} button - The selector of the link to click.
+   * @param {string} buttonName - The name of the link, used in error messages.
+   * @param {string} expectedDestinationPageUrl - The expected URL of the page opened in the new tab.
+   * @param {string} expectedDestinationPageName - The name of the destination page, used in error messages.
+   */
+  private async clickLinkButtonToNewTab(
+    button: string,
+    buttonName: string,
+    expectedDestinationPageUrl: string,
+    expectedDestinationPageName: string
+  ): Promise<void> {
+    const newTabPromise = this.page.context().waitForEvent('page');
+    await this.clickOnElementWithSelector(button);
+    const newTab = await newTabPromise;
+    try {
+      await newTab.waitForURL(
+        url => url.href.startsWith(expectedDestinationPageUrl),
+        {timeout: 30000, waitUntil: 'commit'}
+      );
+    } catch {
+      throw new Error(
+        `${buttonName} should open the ${expectedDestinationPageName} page`
+      );
+    }
+    showMessage(
+      `${buttonName} opened the ${expectedDestinationPageName} page.`
+    );
+    await newTab.close();
   }
 }
 
